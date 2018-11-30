@@ -1,0 +1,64 @@
+.gui{
+    border: 5px solid black;
+    width:500px;
+    height:500px;
+    border-radius: 10px;
+    text-align:center;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column-reverse;
+}
+
+#textArea{
+    font-weight:bold;
+}
+
+.bottom{
+    width:100%;
+}
+
+#input{
+    margin:20px;
+    width:80%;
+}
+
+.cells{
+    overflow:scroll;
+}
+
+.cell{
+    max-height:100px;
+    text-align:left;
+    display:flex;
+    vertical-align: middle;
+    flex-wrap:wrap;
+    margin-top:20px;
+}
+
+.cellImg, .cellText{
+    border:1px solid black;
+    border-radius: 50px;
+    background:lightgray;
+}
+
+.cellImg{
+    width:25px;
+    height:25px;
+    margin:auto;
+}
+
+.cellSepa{
+    width:20px;
+}
+
+.cellData{
+    display:flex;
+    justify-content:center;
+    flex-direction: row;
+}
+
+.cellName{
+    width:100%;
+    margin-left:50px;
+    font-size:10px;
+}

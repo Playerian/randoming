@@ -3,33 +3,28 @@
 	</head>
 	<body>
 		<div id="gui" class='gui'>
-			<h1>Type your informations below</h1>
-			<form class='form' method="post" action="/register">
-				<div>
-					<span>Username(All letters, first one capitalized, 3-12 length): </span>
-					<span><input name='userInput' class='userInput'></span>
-				</div>
-				<br>
-				<div>
-					<span>Password(Anything you want): </span>
-					<br>
-					<span><input type='password' name='passInput' class='passInput'></span>
-				</div>
-				<br>
-				<div>
-					<span>Email: </span>
-					<br>
-					<span><input type='email' name='emailInput' class='emailInput'></span>
-				</div>
-				<br>
-				<input type="submit" value="Register" class='register'>
-			</form>
-			<form class='form' method="post" action="/loginPage">
-				<input type="submit" value="Login Page" class='regis'>
-			</form>
+			<p>You have successful created your account! Page will jump in a second...</p>
+			<p>
+				<a href='javascript:jumpPage()'>Click here to jump back to login page manually.</a>
+			</p>
 		</div>
+		<form class='form' method="post" action="/loginPage">
+			<input id='sendBack' type='hidden' name='username' value=''>
+		</form>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="/css/style.css"/>
-        <script type="text/javascript" src="/script/script.js"></script>
+		<script>
+			/*global $*/
+			let name = '';
+			function jumpPage(){
+				$('#sendBack').val(name);
+				$('form').submit();
+			}
+			function setName(n){
+				name = n;
+			}
+			setTimeout(function(){
+				jumpPage();
+			}, 3000);
+		</script>
 	</body>
 </html>

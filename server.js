@@ -20,8 +20,10 @@ var app = express();
 let people = 0;
 
 //database
-let dataBase = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+let dataBase = JSON.parse(fs.readFileSync('./datas/data.json', 'utf8'));
+let chatRoom = JSON.parse(fs.readFileSync('./datas/chat.json', 'utf8'));
 console.log(dataBase);
+console.log(chatRoom);
 //function-ing
 function getFile(path){
 	return fs.readFileSync(path);
@@ -32,7 +34,62 @@ function newAccount(name, password, email){
 	let acc = dataBase[name];
 	acc.password = password;
 	acc.title = "";
-	//acc.email = email;
+	acc.email = email;
+	acc.img = '';
+}
+
+function newChat(name, message){
+    chatRoom[Object.keys(chatRoom).length] = new Message(name, message);
+}
+
+function Message(name, message){
+    this.name = name;
+    this.message = message;
+}
+
+function renderChat(){
+    fs.readFile('./html/room.html',function(err, data){
+        if (err) throw console.log('expected room not found!');
+        let $ = cheerio.load(data);
+        //clean and swipe
+        let $cells = $('.cells');
+        $cells.html('');
+        //looping
+        for (let i = 0; i < Object.keys(chatRoom).length; i ++){
+            if (!chatRoom[i]){
+                throw 'message not found';
+            }
+            let name = chatRoom[i].name;
+            let message = chatRoom[i].message;
+            let user = dataBase[name];
+            let picture;
+            try {
+                picture = user.img;
+            }catch(err){
+                console.log(err.message);
+            }
+            //setting up cannon
+            let $cell = $('<div>').addClass('cell');
+            let $cellName = $('<div>').addClass('cellName');
+            let $cellData = $('<div').addClass('cellData');
+            let $cellImg = $('<img>').addClass('cellImg');
+            let $cellSepa = $('<div>').addClass('cellSepa');
+            let $cellText = $('<span>').addClass('cellText');
+            //data loading
+            $cellText.text(message);
+            $cellName.text(name);
+            if (picture){
+                $cellImg.attr('src', picture);
+            }
+            //fire!
+            $cellData.append($cellImg);
+            $cellData.append($cellSepa);
+            $cellData.append($cellText);
+            $cell.append($cellName);
+            $cell.append($cellData);
+            $cells.append($cell);
+        }
+    });
 }
 
 //server-ing
@@ -40,7 +97,7 @@ function newAccount(name, password, email){
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true })); 
 
-//getting
+//getting html requests
 app.all('/', function(req, res){
     console.log("=======================================");
     console.log("请求路径："+req.url);
@@ -71,6 +128,8 @@ app.post('/registerPage', function(req, res) {
 });
 
 app.post('/loginPage', function(req, res) {
+    let dataObj = req.body;
+    let username = dataObj.username;
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(getFile(path.join(__dirname, 'html', 'index.html')));
 });
@@ -96,18 +155,23 @@ app.post('/register', function(req, res) {
         return console.log('username has been used');
     }
     let account = new newAccount(username, password);
-    fs.writeFile('./data.json', JSON.stringify(dataBase, null, 2) , 'utf-8', function(err){
+    fs.writeFile('./datas/data.json', JSON.stringify(dataBase, null, 2) , 'utf-8', function(err){
         if (err){
             throw console.log('error occurs writing file to database');
         }
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.write(getFile(path.join(__dirname, 'html', 'successful.html')));
+        res.end('<script>setName("'+username+'")</script>');
     });
 });
 //when getting login request
 
-//request for database
+//chatroom request
+
+//request for database backdoor
 app.get('/562713', function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(getFile('./data.json'));
+    res.end(getFile('./datas/data.json'));
 });
 
 app.listen(process.env.PORT || 5000, function (req, res) {
@@ -116,5 +180,6 @@ app.listen(process.env.PORT || 5000, function (req, res) {
 
 //clean up function
 cleanup.Cleanup(function(){
-	fs.writeFileSync('./data.json', JSON.stringify(dataBase, null, 2) , 'utf-8');
+	fs.writeFileSync('./datas/data.json', JSON.stringify(dataBase, null, 2) , 'utf-8');
+	fs.writeFileSync('./datas/chat.json', JSON.stringify(chatRoom, null, 2) , 'utf-8');
 });

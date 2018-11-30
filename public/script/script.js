@@ -35,5 +35,5 @@ function sameUser(username){
     $('#textArea').text("This username: "+username+" has already been taken");
     setTimeout(function(){
         $("#textArea").text("");
-    }, 5000);
+    }, 30000);
 }
