@@ -1,31 +1,73 @@
 {
   "Philarry": {
     "password": "123456",
-    "title": ""
+    "title": "",
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
   },
   "Notsecure": {
     "password": "NotSecureSite",
     "title": "",
-    "img": ""
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
   },
   "Doingapush": {
     "password": "push",
     "title": "",
-    "img": ""
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
   },
   "Doingpush": {
     "password": "aaa",
     "title": "",
-    "img": ""
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
   },
   "Doing": {
     "password": "apush",
     "title": "",
-    "img": ""
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
   },
   "Ginod": {
     "password": "doing",
     "title": "",
-    "img": ""
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
+  },
+  "System": {
+    "password": "a=3i---0/./pww`a~rb",
+    "title": "",
+    "email": "a-a-a-a",
+    "img": "",
+    "setting": {
+      "color": "black",
+      "background": "lightgray",
+      "fontsize": "15px"
+    }
   }
 }

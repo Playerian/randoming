@@ -46,6 +46,13 @@ function newAccount(name, password, email){
 	};
 }
 
+function update(){
+    for (let key in dataBase){
+        console.log(key);
+        newAccount(key, dataBase[key].password, dataBase[key].email);
+    }
+}
+
 function newChat(name, message){
     chatRoom[Object.keys(chatRoom).length] = new Message(name, message);
 }
@@ -55,7 +62,7 @@ function Message(name, message){
     this.message = message;
 }
 
-function renderChat(callback){
+function renderChat(callback, customSetting){
     fs.readFile('./html/room.html',function(err, data){
         if (err) throw console.log('expected room not found!');
         let $ = cheerio.load(data);
@@ -70,6 +77,7 @@ function renderChat(callback){
             let name = chatRoom[i].name;
             let message = chatRoom[i].message;
             let user = dataBase[name];
+            let setting = dataBase[name].setting || customSetting || {};
             let picture;
             try {
                 picture = user.img;
@@ -101,6 +109,21 @@ function renderChat(callback){
         callback($.html());
     });
 }
+
+function setCookie(username, res){
+    let options = {
+        maxAge: 1000 * 60, // would expire after 1 minutes
+        httpOnly: true, // The cookie only accessible by the web server
+    };
+
+    // Set cookie
+    let rng = String(Math.random());
+    let rng2 = String(Math.random());
+    let cookieValue = rng.substr(2) + rng2.substr(2);
+    addCookie(username, cookieValue);
+    res.cookie(username, cookieValue, options); // options is optional
+}
+
 //server-ing
 //app usees
 app.use(express.static('public'));
@@ -179,26 +202,13 @@ app.post('/logging', function(req, res){
     let dataObj = req.body;
     let username = dataObj.userInput;
     let password = dataObj.passInput;
+    username = username = username.charAt(0).toUpperCase() + username.substring(1).toLowerCase();
     console.log(username);
     console.log(password);
     if (dataBase[username]){
         if (dataBase[username].password === password){
-            //successful login
-            let options = {
-                maxAge: 1000 * 60, // would expire after 1 minutes
-                httpOnly: true, // The cookie only accessible by the web server
-            };
-        
-            // Set cookie
-            let rng = String(Math.random());
-            let rng2 = String(Math.random());
-            let cookieValue = rng.substr(2) + rng2.substr(2);
-            addCookie(username, cookieValue);
-            res.cookie(username, cookieValue, options); // options is optional
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            renderChat(function(data){
-                res.end(data);
-            });
+            setCookie(username, res);
+            res.redirect('/intoChatroom');
             return;
         }else{
             let text = 'password incorrect';
@@ -224,15 +234,7 @@ app.get('/intoChatroom', function(req,res){
         let value = cookie[key];
         if (cookieList[key]){
             if (cookieList[key].value === value){
-                let options = {
-                    maxAge: 1000 * 60, // would expire after 1 minutes
-                    httpOnly: true, // The cookie only accessible by the web server
-                };
-                let rng = String(Math.random());
-                let rng2 = String(Math.random());
-                let cookieValue = rng.substr(2) + rng2.substr(2);
-                addCookie(key, cookieValue);
-                res.cookie(key, cookieValue, options); // options is optional
+                setCookie(key, res);
                 res.writeHead(200, {
                     'Content-Type': 'text/html',
                     'Expires': '-1'
@@ -263,20 +265,19 @@ app.post('/sendMess', function(req,res){
         if (cookieList[key]){
             if (cookieList[key].value === value){
                 newChat(key, message);
-                let options = {
-                    maxAge: 1000 * 60, // would expire after 1 minutes
-                    httpOnly: true, // The cookie only accessible by the web server
-                };
-                let rng = String(Math.random());
-                let rng2 = String(Math.random());
-                let cookieValue = rng.substr(2) + rng2.substr(2);
-                addCookie(key, cookieValue);
-                res.cookie(key, cookieValue, options); // options is optional
-                res.writeHead(200, {'Content-Type': 'text/html'});
+                setCookie(key, res);
+                res.writeHead(200, {
+                    'Content-Type': 'text/html',
+                    'Expires': '-1'
+                });
                 renderChat(function(data){
                     res.end(data);
                 });
                 return;
+            }else{
+                console.log("cookie doesn't match");
+                setCookie(key, res);
+                res.end();
             }
         }
     }

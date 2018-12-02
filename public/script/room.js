@@ -18,6 +18,8 @@ setInterval(function(){
             scrolling = false;
         }
         let $page = $($.parseHTML(data));
+        let $cell = $page.find('.cell');
+        console.log($($cell[$cell.length - 1]).find('.cellText').text());
         $('.cells').html($page.find('.cells').html());
         if (scrolling){
             scroll();
