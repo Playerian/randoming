@@ -37,3 +37,10 @@ function sameUser(username){
         $("#textArea").text("");
     }, 30000);
 }
+
+function textAreaText(text){
+    $('.textArea').text(text);
+    setTimeout(function(){
+        $(".textArea").text("");
+    }, 30000);
+}

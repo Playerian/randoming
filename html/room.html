@@ -6,8 +6,10 @@
 		<div id="gui" class='gui'>
 			<div class='bottom'>
 				<div class='bottom'>
-					<input id='input' class='bottom'>
-					<button>Send</button>
+					<form method='post' action='/sendMess'>
+						<input id='input' class='bottom' name='message'>
+						<input type='submit'></input>
+					</form>
 				</div>
 			</div>
 			<div class='cells'>
@@ -24,7 +26,7 @@
 			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="../public/css/room.css"/>
-        <script type="text/javascript" src="../public/script/room.js"></script>
+        <link rel="stylesheet" type="text/css" href="./css/room.css"/>
+        <script type="text/javascript" src="/script/room.js"></script>
 	</body>
 </html>

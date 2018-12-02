@@ -11,12 +11,15 @@ var bodyParser = require('body-parser');
 var cleanup = require('./library/cleanup');
 var sanitizer = require('sanitize')();
 var nodemailer = require('nodemailer');
+var cookieParser = require('cookie-parser');
 
 //my module
 var should = require('should');
 
 // 建立 express 实例
 var app = express();
+//vars
+let cookieList = {};
 let people = 0;
 
 //database
@@ -47,7 +50,7 @@ function Message(name, message){
     this.message = message;
 }
 
-function renderChat(){
+function renderChat(callback){
     fs.readFile('./html/room.html',function(err, data){
         if (err) throw console.log('expected room not found!');
         let $ = cheerio.load(data);
@@ -66,12 +69,12 @@ function renderChat(){
             try {
                 picture = user.img;
             }catch(err){
-                console.log(err.message);
+                //insert err message
             }
             //setting up cannon
             let $cell = $('<div>').addClass('cell');
             let $cellName = $('<div>').addClass('cellName');
-            let $cellData = $('<div').addClass('cellData');
+            let $cellData = $('<div>').addClass('cellData');
             let $cellImg = $('<img>').addClass('cellImg');
             let $cellSepa = $('<div>').addClass('cellSepa');
             let $cellText = $('<span>').addClass('cellText');
@@ -82,20 +85,22 @@ function renderChat(){
                 $cellImg.attr('src', picture);
             }
             //fire!
+            $cell.append($cellName);
+            $cell.append($cellData);
             $cellData.append($cellImg);
             $cellData.append($cellSepa);
             $cellData.append($cellText);
-            $cell.append($cellName);
-            $cell.append($cellData);
             $cells.append($cell);
         }
+        //send back html
+        callback($.html());
     });
 }
-
 //server-ing
-//app use
+//app usees
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(cookieParser());
 
 //getting html requests
 app.all('/', function(req, res){
@@ -165,18 +170,137 @@ app.post('/register', function(req, res) {
     });
 });
 //when getting login request
+app.post('/logging', function(req, res){
+    let dataObj = req.body;
+    let username = dataObj.userInput;
+    let password = dataObj.passInput;
+    console.log(username);
+    console.log(password);
+    if (dataBase[username]){
+        if (dataBase[username].password === password){
+            //successful login
+            let options = {
+                maxAge: 1000 * 60, // would expire after 1 minutes
+                httpOnly: true, // The cookie only accessible by the web server
+            };
+        
+            // Set cookie
+            let rng = String(Math.random());
+            let rng2 = String(Math.random());
+            let cookieValue = rng.substr(2) + rng2.substr(2);
+            addCookie(username, cookieValue);
+            res.cookie(username, cookieValue, options); // options is optional
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.end(getFile(path.join(__dirname, 'html', 'room.html')));
+            return;
+        }else{
+            let text = 'password incorrect';
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.write(getFile(path.join(__dirname, 'html', 'index.html')));
+            res.end('<script>textAreaText("'+text+'")</script>');
+            return;
+        }
+    }else{
+        let text = 'username not found';
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.write(getFile(path.join(__dirname, 'html', 'index.html')));
+        res.end('<script>textAreaText("'+text+'")</script>');
+        return;
+    }
+});
 
 //chatroom request
+app.get('/intoChatroom', function(req,res){
+    // read cookies
+    let cookie = req.cookies;
+    for (let key in cookie){
+        let value = cookie[key];
+        if (cookieList[key]){
+            if (cookieList[key].value === value){
+                let options = {
+                    maxAge: 1000 * 60, // would expire after 1 minutes
+                    httpOnly: true, // The cookie only accessible by the web server
+                };
+                let rng = String(Math.random());
+                let rng2 = String(Math.random());
+                let cookieValue = rng.substr(2) + rng2.substr(2);
+                addCookie(key, cookieValue);
+                res.cookie(key, cookieValue, options); // options is optional
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                renderChat(function(data){
+                    res.end(data);
+                });
+                return;
+            }
+        }
+    }
+    res.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Expires': '-1'
+    });
+    res.end(getFile(path.join(__dirname, 'html', 'index.html')));
+});
+
+app.post('/sendMess', function(req,res){
+    let message = req.body.message;
+    console.log(message);
+    let cookie = req.cookies;
+    for (let key in cookie){
+        let value = cookie[key];
+        if (cookieList[key]){
+            if (cookieList[key].value === value){
+                newChat(key, message);
+                let options = {
+                    maxAge: 1000 * 60, // would expire after 1 minutes
+                    httpOnly: true, // The cookie only accessible by the web server
+                };
+                let rng = String(Math.random());
+                let rng2 = String(Math.random());
+                let cookieValue = rng.substr(2) + rng2.substr(2);
+                addCookie(key, cookieValue);
+                res.cookie(key, cookieValue, options); // options is optional
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                renderChat(function(data){
+                    res.end(data);
+                });
+                return;
+            }
+        }
+    }
+});
 
 //request for database backdoor
 app.get('/562713', function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(getFile('./datas/data.json'));
+    res.write(JSON.stringify(dataBase, null, 2));
+    res.end(JSON.stringify(chatRoom, null, 2));
 });
 
 app.listen(process.env.PORT || 5000, function (req, res) {
   console.log('app is running at port 5000');
 });
+
+//cookie expiration
+function addCookie(key, value){
+    cookieList[key] = {};
+    cookieList[key].value = value;
+    cookieList[key].timeout = 60;
+    clearInterval(expiration);
+    expiration = setInterval(expireFunc, 1000);
+}
+function expireFunc(){
+    let trashcan = [];
+    for (let key in cookieList){
+        cookieList[key].timeout --;
+        if (cookieList[key].timeout === 0){
+            trashcan.push(key);
+        }
+    }
+    for (let i = 0; i < trashcan.length; i ++){
+        delete cookieList[trashcan[i]];
+    }
+}
+let expiration = setInterval(expireFunc, 1000);
 
 //clean up function
 cleanup.Cleanup(function(){
