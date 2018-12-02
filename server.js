@@ -39,6 +39,11 @@ function newAccount(name, password, email){
 	acc.title = "";
 	acc.email = email;
 	acc.img = '';
+	acc.setting = {
+	    color: 'black',
+	    background: 'lightgray',
+	    fontsize: '15px'
+	};
 }
 
 function newChat(name, message){
@@ -191,7 +196,9 @@ app.post('/logging', function(req, res){
             addCookie(username, cookieValue);
             res.cookie(username, cookieValue, options); // options is optional
             res.writeHead(200, {'Content-Type': 'text/html'});
-            res.end(getFile(path.join(__dirname, 'html', 'room.html')));
+            renderChat(function(data){
+                res.end(data);
+            });
             return;
         }else{
             let text = 'password incorrect';
@@ -226,7 +233,10 @@ app.get('/intoChatroom', function(req,res){
                 let cookieValue = rng.substr(2) + rng2.substr(2);
                 addCookie(key, cookieValue);
                 res.cookie(key, cookieValue, options); // options is optional
-                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.writeHead(200, {
+                    'Content-Type': 'text/html',
+                    'Expires': '-1'
+                });
                 renderChat(function(data){
                     res.end(data);
                 });
@@ -244,6 +254,9 @@ app.get('/intoChatroom', function(req,res){
 app.post('/sendMess', function(req,res){
     let message = req.body.message;
     console.log(message);
+    if (message === ''){
+        return;
+    }
     let cookie = req.cookies;
     for (let key in cookie){
         let value = cookie[key];
@@ -272,7 +285,11 @@ app.post('/sendMess', function(req,res){
 //request for database backdoor
 app.get('/562713', function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write(JSON.stringify(dataBase, null, 2));
+    res.end(JSON.stringify(dataBase, null, 2));
+});
+
+app.get('/3466837', function(req, res) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(JSON.stringify(chatRoom, null, 2));
 });
 
