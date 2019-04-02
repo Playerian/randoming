@@ -8,6 +8,10 @@ function scroll(){
     element.scrollTop = element.scrollHeight;
 }
 
+$('#inputSubmit').submit(function(event){
+    $('#input').val('');
+});
+
 setInterval(function(){
     $.get("intoChatroom", function(data){
         let scrolling = false;

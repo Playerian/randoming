@@ -26,7 +26,7 @@ let people = 0;
 let dataBase = JSON.parse(fs.readFileSync('./datas/data.json', 'utf8'));
 let chatRoom = JSON.parse(fs.readFileSync('./datas/chat.json', 'utf8'));
 console.log(dataBase);
-console.log(chatRoom);
+console.log(chatRoom); 
 //function-ing
 function getFile(path){
 	return fs.readFileSync(path);
